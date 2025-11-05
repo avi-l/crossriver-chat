@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 
+export type TRole = 'user' | 'assistant' | 'system';
 export interface IChatMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: TRole;
   content: string;
 }
 
@@ -11,7 +12,7 @@ interface IChatState {
   input: string;
   setInput: (value: string) => void;
   addMessage: (message: IChatMessage) => void;
-  clearChat: () => void;
+  clearMessages: () => void;
 }
 
 export const useChatStore = create<IChatState>((set) => ({
@@ -20,5 +21,5 @@ export const useChatStore = create<IChatState>((set) => ({
   setInput: (value) => set({ input: value }),
   addMessage: (message) =>
     set((state) => ({ messages: [...state.messages, message] })),
-  clearChat: () => set({ messages: [] }),
+  clearMessages: () => set({ messages: [] }),
 }));

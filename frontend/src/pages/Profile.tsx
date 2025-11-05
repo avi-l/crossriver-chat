@@ -1,5 +1,5 @@
 import { useMsal, useAccount } from '@azure/msal-react';
-import { AuthButton } from './AuthButton';
+import { AuthButton } from '../components/AuthButton';
 
 export const Profile = () => {
   const { instance, accounts } = useMsal();

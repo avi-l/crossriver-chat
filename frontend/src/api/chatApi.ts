@@ -1,33 +1,48 @@
 import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
+import axios from 'axios';
 
 const ChatRequestSchema = z.object({
-  message: z.string().min(1),
+  messages: z.array(
+    z.object({
+      role: z.enum(['user', 'assistant', 'system']),
+      content: z.string().min(1),
+    })
+  ),
+  model: z.string().optional(),
 });
 
-export type ChatRequest = z.infer<typeof ChatRequestSchema>;
+type TChatRequest = z.infer<typeof ChatRequestSchema>;
+type TChatMessage = {
+  id: string;
+  role: 'assistant';
+  content: string;
+};
 
 export const useSendMessage = () =>
-  useMutation({
-    mutationFn: async (data: z.infer<typeof ChatRequestSchema>) => {
+  useMutation<TChatMessage, Error, TChatRequest>({
+    mutationFn: async (data) => {
       const validated = ChatRequestSchema.parse(data);
+      try {
+        const response = await axios.post('/api/chat', validated, {
+          headers: { 'Content-Type': 'application/json' },
+        });
 
-      console.log('Sending to backend:', validated); // <-- debug
+        const reply = response.data;
 
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validated),
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch AI response');
-
-      const reply = await response.json();
-
-      return {
-        id: crypto.randomUUID(),
-        role: 'assistant' as const,
-        content: reply.content,
-      };
+        return {
+          id: crypto.randomUUID(),
+          role: 'assistant' as const,
+          content: reply.content,
+        };
+      } catch (error: any) {
+        console.error(
+          'Error sending message:',
+          error.response || error.message
+        );
+        throw new Error(
+          error.response?.data?.error || 'Failed to fetch AI response'
+        );
+      }
     },
   });

@@ -6,8 +6,9 @@ import { ModeToggle } from './components/ModeToggle';
 import { AuthButton } from './components/AuthButton';
 
 import { useAccount, useMsal } from '@azure/msal-react';
-import { Profile } from './components/Profile';
+import { Profile } from './pages/Profile';
 import Chat from './pages/Chat';
+import Login from './pages/Login';
 
 export const App = () => {
   const { accounts } = useMsal();
@@ -16,13 +17,11 @@ export const App = () => {
   return (
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
       <ModeToggle />
-      <AuthButton />
       {!account ? (
-        <div>Please Log In</div>
+        <Login />
       ) : (
         <Routes>
           <Route path='/profile' element={<Profile />} />
-          {/* <Route path="/" element={<Home />} />*/}
           <Route path='/chat' element={<Chat />} />
         </Routes>
       )}
