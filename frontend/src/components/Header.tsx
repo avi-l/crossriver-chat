@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useMsal } from '@azure/msal-react';
 import { useLogout } from '@/hooks/useLogout';
+import { ColorThemePicker } from './ThemeSelector';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ const Header = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
+        <ColorThemePicker />
         <ModeToggle />
       </div>
     </header>

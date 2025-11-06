@@ -139,7 +139,7 @@ const Chat = () => {
                         : 'bg-muted text-muted-foreground mb-6'
                     }`}
                   >
-                    <div className='prose dark:prose-invert whitespace-pre-wrap break-words'>
+                    <div className='prose dark:prose-invert whitespace-pre-wrap wrap-break-word'>
                       <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
                         {msg.content}
                       </ReactMarkdown>
@@ -147,7 +147,7 @@ const Chat = () => {
 
                     {/* AI bubble actions */}
                     {msg.role === 'assistant' && (
-                      <div className='absolute top-full mt-1 right-2 flex gap-2'>
+                      <div className='absolute top-full mt-1 left-2 flex gap-2'>
                         <button
                           className='p-1 hover:bg-muted/50 rounded'
                           onClick={() =>

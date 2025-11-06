@@ -32,8 +32,14 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement;
-
-    root.classList.remove('light', 'dark');
+    console.log('THEME', theme);
+    if (theme.includes('light')) {
+      root.classList.remove('dark');
+      root.classList.add('light');
+    } else if (theme.includes('-dark')) {
+      root.classList.remove('light');
+      root.classList.add('dark');
+    }
 
     if (theme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
