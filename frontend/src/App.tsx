@@ -9,6 +9,7 @@ import { useAccount, useMsal } from '@azure/msal-react';
 import { Profile } from './pages/Profile';
 import Chat from './pages/Chat';
 import Login from './pages/Login';
+import Header from './components/Header';
 
 export const App = () => {
   const { accounts } = useMsal();
@@ -16,7 +17,7 @@ export const App = () => {
 
   return (
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-      <ModeToggle />
+      <Header />
       {!account ? (
         <Login />
       ) : (

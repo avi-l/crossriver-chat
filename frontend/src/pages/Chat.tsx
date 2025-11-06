@@ -65,7 +65,9 @@ const Chat = () => {
     <div className='flex h-[calc(100vh-4rem)] justify-center items-center p-4'>
       <Card className='w-full max-w-2xl h-full flex flex-col'>
         <CardHeader>
-          <CardTitle className='text-xl font-semibold'>Chat with AI</CardTitle>
+          <CardTitle className='text-xl font-semibold'>
+            Chat with your AI Buddy!
+          </CardTitle>
         </CardHeader>
 
         <CardContent className='flex flex-col flex-1 overflow-hidden'>
