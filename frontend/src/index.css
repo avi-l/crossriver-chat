@@ -121,3 +121,16 @@
 button {
   cursor: pointer !important;
 }
+/* Prevent horizontal scrolling and wrap long lines in code blocks */
+.prose pre {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-x: auto; /* optional, keeps scroll for extremely long words */
+  border-radius: 8px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+.prose code {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}

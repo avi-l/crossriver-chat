@@ -1,8 +1,13 @@
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AuthButton } from '@/components/AuthButton';
+import { useAccount, useMsal } from '@azure/msal-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
-const Login = () => {
+const Landing = () => {
+  const { accounts } = useMsal();
+  const account = useAccount(accounts[0] || {});
+  const navigate = useNavigate();
   return (
     <div className='min-h-screen flex flex-col bg-background text-foreground'>
       {/* Hero Section */}
@@ -12,12 +17,16 @@ const Login = () => {
         </h1>
         <p className='text-muted-foreground max-w-md mb-8'>
           Chat Buddy lets you have intelligent, context-aware conversations with
-          your own AI assistant — powered by the latest LLMs. Sign in to start
-          chatting!
+          your own AI assistant — powered by the latest LLMs.{' '}
+          {!account && 'Sign in to start chatting!'}
         </p>
 
         <div className='flex flex-col sm:flex-row gap-4'>
-          <AuthButton />
+          {!account ? (
+            <AuthButton />
+          ) : (
+            <Button onClick={() => navigate('/chat')}>Start Chatting!</Button>
+          )}
         </div>
       </main>
 
@@ -54,4 +63,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Landing;

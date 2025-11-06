@@ -1,15 +1,13 @@
 import { Routes, Route } from 'react-router-dom';
-// import Home from './pages/Home';
-// import Chat from './pages/Chat';
+
 import { ThemeProvider } from './components/theme-provider';
-import { ModeToggle } from './components/ModeToggle';
-import { AuthButton } from './components/AuthButton';
 
 import { useAccount, useMsal } from '@azure/msal-react';
-import { Profile } from './pages/Profile';
+
 import Chat from './pages/Chat';
-import Login from './pages/Login';
+import Landing from './pages/Landing';
 import Header from './components/Header';
+import Profile from './pages/Profile';
 
 export const App = () => {
   const { accounts } = useMsal();
@@ -19,11 +17,12 @@ export const App = () => {
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
       <Header />
       {!account ? (
-        <Login />
+        <Landing />
       ) : (
         <Routes>
           <Route path='/profile' element={<Profile />} />
           <Route path='/chat' element={<Chat />} />
+          <Route path='/' element={<Landing />} />
         </Routes>
       )}
     </ThemeProvider>

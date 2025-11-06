@@ -16,10 +16,19 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog';
+import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
+// Light mode theme
+import 'highlight.js/styles/github.css';
+// Dark mode theme
+import 'highlight.js/styles/github-dark.css';
+import { useTheme } from '@/components/theme-provider';
 
 const MAX_HISTORY = 10;
 
 const Chat = () => {
+  const { theme } = useTheme(); // 'light' | 'dark'
+
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const { messages, input, setInput, addMessage, clearMessages } =
     useChatStore();
@@ -28,6 +37,22 @@ const Chat = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+  useEffect(() => {
+    const head = document.head;
+    let link = document.getElementById('hljs-theme') as HTMLLinkElement;
+
+    if (!link) {
+      link = document.createElement('link');
+      link.id = 'hljs-theme';
+      link.rel = 'stylesheet';
+      head.appendChild(link);
+    }
+
+    link.href =
+      theme === 'dark'
+        ? '/node_modules/highlight.js/styles/github-dark.css'
+        : '/node_modules/highlight.js/styles/github.css';
+  }, [theme]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,13 +105,17 @@ const Chat = () => {
               messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`p-3 rounded-lg max-w-[80%] mb-3 ${
+                  className={`prose p-3 rounded-lg max-w-[95%] mb-3 ${
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground self-end ml-auto'
                       : 'bg-muted text-muted-foreground'
                   }`}
                 >
-                  {msg.content}
+                  <div className='prose dark:prose-invert'>
+                    <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               ))
             )}
