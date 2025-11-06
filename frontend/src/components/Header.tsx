@@ -2,7 +2,6 @@ import { MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/state/userStore';
 import { ModeToggle } from '@/components/ModeToggle';
-import { AuthButton } from '@/components/AuthButton';
 import {
   DropdownMenu,
   DropdownMenuTrigger,

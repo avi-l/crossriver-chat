@@ -2,8 +2,6 @@ import { useMsal } from '@azure/msal-react';
 import { Button } from './ui/button';
 import { loginRequest } from '@/auth/authConfig';
 import { useNavigate } from 'react-router-dom';
-import { useChatStore } from '@/state/chatStore';
-import { useUserStore } from '@/state/userStore';
 import { useLogout } from '@/hooks/useLogout';
 
 export const AuthButton = () => {
