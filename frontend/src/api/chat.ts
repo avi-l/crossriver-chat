@@ -1,14 +1,13 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  try {
-    const { messages, model } = req.body;
+  const { messages, model } = req.body;
 
+  try {
     const groqResponse = await axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
       {
