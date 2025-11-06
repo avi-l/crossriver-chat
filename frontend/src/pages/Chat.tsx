@@ -1,11 +1,9 @@
-import { useChatStore, type IChatMessage } from '../state/chatStore';
-import { useSendMessage } from '../api/chatApi';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useRef, useEffect } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Trash2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { Loader2, Trash2, Copy, RefreshCw } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -16,27 +14,28 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog';
+
+import { useChatStore, type IChatMessage } from '../state/chatStore';
+import { useSendMessage } from '../api/chatApi';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
-// Light mode theme
-import 'highlight.js/styles/github.css';
-// Dark mode theme
-import 'highlight.js/styles/github-dark.css';
 import { useTheme } from '@/components/theme-provider';
 
 const MAX_HISTORY = 10;
 
 const Chat = () => {
   const { theme } = useTheme(); // 'light' | 'dark'
-
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const { messages, input, setInput, addMessage, clearMessages } =
     useChatStore();
   const sendMessage = useSendMessage();
 
+  // Scroll to bottom on new messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Switch highlight.js theme dynamically
   useEffect(() => {
     const head = document.head;
     let link = document.getElementById('hljs-theme') as HTMLLinkElement;
@@ -54,9 +53,34 @@ const Chat = () => {
         : '/node_modules/highlight.js/styles/github.css';
   }, [theme]);
 
+  // Build payload for AI
+  const buildMessagesToSend = (userContent: string) => {
+    const recentMessages = messages.slice(-MAX_HISTORY);
+    return [
+      { role: 'system' as const, content: 'You are a helpful AI assistant.' },
+      ...recentMessages.map((m) => ({
+        role: m.role as 'user' | 'assistant' | 'system',
+        content: m.content,
+      })),
+      { role: 'user' as const, content: userContent },
+    ];
+  };
+
+  // Send a message to AI
+  const sendUserMessage = (userMessage: IChatMessage) => {
+    addMessage(userMessage);
+
+    sendMessage.mutate(
+      {
+        messages: buildMessagesToSend(userMessage.content),
+        model: 'llama-3.3-70b-versatile',
+      },
+      { onSuccess: (response) => addMessage(response) }
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!input.trim()) return;
 
     const userMessage: IChatMessage = {
@@ -65,25 +89,24 @@ const Chat = () => {
       content: input.trim(),
     };
 
-    addMessage(userMessage);
     setInput('');
+    sendUserMessage(userMessage);
+  };
 
-    // Take the last MAX_HISTORY messages from the store
-    const recentMessages = messages.slice(-MAX_HISTORY);
+  const handleTryAgain = (assistantMsg: IChatMessage) => {
+    // Find the last user message before this AI response
+    const aiIndex = messages.findIndex((m) => m.id === assistantMsg.id);
+    if (aiIndex === -1) return;
 
-    const messagesToSend = [
-      { role: 'system' as const, content: 'You are a helpful AI assistant.' },
-      ...recentMessages.map((m) => ({
-        role: m.role as 'user' | 'assistant' | 'system',
-        content: m.content,
-      })),
-      { role: 'user' as const, content: userMessage.content },
-    ];
+    const lastUserMsg = [...messages]
+      .slice(0, aiIndex)
+      .reverse()
+      .find((m) => m.role === 'user');
 
-    sendMessage.mutate(
-      { messages: messagesToSend, model: 'llama-3.3-70b-versatile' },
-      { onSuccess: (response) => addMessage(response) }
-    );
+    if (!lastUserMsg) return;
+
+    // Send a new message using the content from the original user message
+    sendUserMessage({ ...lastUserMsg, id: crypto.randomUUID() });
   };
 
   return (
@@ -105,20 +128,50 @@ const Chat = () => {
               messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`prose p-3 rounded-lg max-w-[95%] mb-3 ${
-                    msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground self-end ml-auto'
-                      : 'bg-muted text-muted-foreground'
+                  className={`flex mb-3 ${
+                    msg.role === 'user' ? 'justify-end' : 'justify-start'
                   }`}
                 >
-                  <div className='prose dark:prose-invert'>
-                    <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
-                      {msg.content}
-                    </ReactMarkdown>
+                  <div
+                    className={`group relative prose p-3 rounded-lg max-w-[80%] ${
+                      msg.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground mb-6'
+                    }`}
+                  >
+                    <div className='prose dark:prose-invert whitespace-pre-wrap break-words'>
+                      <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+
+                    {/* AI bubble actions */}
+                    {msg.role === 'assistant' && (
+                      <div className='absolute top-full mt-1 right-2 flex gap-2'>
+                        <button
+                          className='p-1 hover:bg-muted/50 rounded'
+                          onClick={() =>
+                            navigator.clipboard.writeText(msg.content)
+                          }
+                          title='Copy'
+                        >
+                          <Copy className='w-4 h-4' />
+                        </button>
+
+                        <button
+                          className='p-1 hover:bg-muted/50 rounded'
+                          onClick={() => handleTryAgain(msg)}
+                          title='Try Again'
+                        >
+                          <RefreshCw className='w-4 h-4' />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
             )}
+
             {sendMessage.isPending && (
               <div className='flex justify-start items-center text-sm text-muted-foreground'>
                 <Loader2 className='w-4 h-4 mr-2 animate-spin' />
@@ -137,6 +190,7 @@ const Chat = () => {
             <Button type='submit' disabled={sendMessage.isPending}>
               Send
             </Button>
+
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
