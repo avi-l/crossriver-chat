@@ -35,7 +35,6 @@ const Chat = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Switch highlight.js theme dynamically
   useEffect(() => {
     const head = document.head;
     let link = document.getElementById('hljs-theme') as HTMLLinkElement;
@@ -47,10 +46,7 @@ const Chat = () => {
       head.appendChild(link);
     }
 
-    link.href =
-      theme === 'dark'
-        ? '/node_modules/highlight.js/styles/github-dark.css'
-        : '/node_modules/highlight.js/styles/github.css';
+    link.href = theme === 'dark' ? '/hljs/github-dark.css' : '/hljs/github.css';
   }, [theme]);
 
   // Build payload for AI
@@ -139,7 +135,7 @@ const Chat = () => {
                         : 'bg-muted text-muted-foreground mb-6'
                     }`}
                   >
-                    <div className='prose dark:prose-invert whitespace-pre-wrap wrap-break-word'>
+                    <div className={`prose ${theme === 'dark' ? 'dark' : ''}`}>
                       <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
                         {msg.content}
                       </ReactMarkdown>
