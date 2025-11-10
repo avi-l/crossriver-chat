@@ -8,6 +8,7 @@ import Chat from './pages/Chat';
 import Landing from './pages/Landing';
 import Header from './components/Header';
 import Profile from './pages/Profile';
+import { Toaster } from './components/ui/sonner';
 
 export const App = () => {
   const { accounts } = useMsal();
@@ -15,6 +16,7 @@ export const App = () => {
 
   return (
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
+      <Toaster />
       <Header />
       {!account ? (
         <Landing />

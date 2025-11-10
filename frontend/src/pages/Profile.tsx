@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { useUserStore } from '../state/userStore';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -47,9 +48,10 @@ const Profile = () => {
       setDisplayName(localName);
 
       setLoading(false);
-      alert('Profile saved!');
+      // change this to a toast notification
+      toast.success('Profile saved!');
       // Optionally persist to backend here
-    }, 1000);
+    }, 500);
   };
 
   return (
