@@ -16,4 +16,5 @@ export interface ChartPayload {
     datasets: ChartDataset[];
   };
   options?: Record<string, unknown>;
+  hoverInfo?: string[];
 }

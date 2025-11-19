@@ -1,4 +1,4 @@
-import type { ChartPayload } from '@/types/chart';
+import React, { useMemo } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,7 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Line, Bar, Pie, Doughnut } from 'react-chartjs-2';
-import { useMemo } from 'react';
+import type { ChartPayload } from '@/types/chart';
 
 ChartJS.register(
   CategoryScale,
@@ -47,6 +47,44 @@ export const ChartBlock = ({ payload }: ChartBlockProps) => {
         title: payload.title
           ? { display: true, text: payload.title }
           : undefined,
+
+        tooltip: {
+          callbacks: {
+            // `ctx` is a TooltipItem for the active item
+            label: (ctx: any) => {
+              const dataIndex = ctx.dataIndex;
+              const dataset = ctx.dataset; // dataset object shown by Chart.js
+              const datasetHoverInfo = (dataset &&
+                (dataset as any).hoverInfo) as string[] | undefined;
+              const payloadHoverInfo = (payload as any).hoverInfo as
+                | string[]
+                | undefined;
+
+              // Priority #1: dataset-level hoverInfo (dataset.hoverInfo[dataIndex])
+              if (datasetHoverInfo && datasetHoverInfo[dataIndex] != null) {
+                // return either a string or an array of strings (tooltip supports array -> multi-line)
+                return datasetHoverInfo[dataIndex];
+              }
+
+              // Priority #2: top-level payload hoverInfo (payload.hoverInfo[dataIndex])
+              if (payloadHoverInfo && payloadHoverInfo[dataIndex] != null) {
+                return payloadHoverInfo[dataIndex];
+              }
+
+              // Fallback: default label (dataset label + value)
+              const label = ctx.dataset?.label ?? '';
+              const value = ctx.formattedValue ?? ctx.raw ?? '';
+              return label ? `${label}: ${value}` : String(value);
+            },
+            // You can optionally override the title too (shows above tooltip)
+            title: (items: any[]) => {
+              if (!items || items.length === 0) return '';
+              const first = items[0];
+              // use the x-axis label (or label reported by Chart.js)
+              return first.label ?? first.title ?? '';
+            },
+          },
+        },
       },
     };
 
@@ -54,7 +92,7 @@ export const ChartBlock = ({ payload }: ChartBlockProps) => {
       ...baseOptions,
       ...(payload.options || {}),
     };
-  }, [payload.options, payload.title]);
+  }, [payload]);
 
   if (!ChartComponent) return null;
 

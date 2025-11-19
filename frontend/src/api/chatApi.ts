@@ -34,6 +34,7 @@ export const useSendMessage = () =>
         const reply = response.data;
 
         const { text, chart } = extractChartPayload(reply.content);
+        console.log({ text, chart });
 
         return {
           id: crypto.randomUUID(),
