@@ -1,10 +1,12 @@
 import { create } from 'zustand';
+import type { ChartPayload } from '@/types/chart';
 
 export type TRole = 'user' | 'assistant' | 'system';
 export interface IChatMessage {
   id: string;
   role: TRole;
   content: string;
+  chart?: ChartPayload;
 }
 
 interface IChatState {

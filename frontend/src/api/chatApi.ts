@@ -1,6 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
 import axios from 'axios';
+import { extractChartPayload } from '@/utils/chartParser';
+import type { ChartPayload } from '@/types/chart';
 
 const ChatRequestSchema = z.object({
   messages: z.array(
@@ -17,6 +19,7 @@ type TChatMessage = {
   id: string;
   role: 'assistant';
   content: string;
+  chart?: ChartPayload;
 };
 
 export const useSendMessage = () =>
@@ -30,10 +33,13 @@ export const useSendMessage = () =>
 
         const reply = response.data;
 
+        const { text, chart } = extractChartPayload(reply.content);
+
         return {
           id: crypto.randomUUID(),
           role: 'assistant' as const,
-          content: reply.content,
+          content: text,
+          chart,
         };
       } catch (error: any) {
         console.error(

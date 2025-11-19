@@ -20,6 +20,10 @@ import { useSendMessage } from '../api/chatApi';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import { useTheme } from '@/components/theme-provider';
+import { ChartBlock } from '@/components/chat/ChartBlock';
+
+const SYSTEM_PROMPT =
+  'You are a helpful AI assistant that can explain concepts clearly. When a user asks for a data visualization, respond with normal Markdown plus a chart block using this format: ```chart { "type": "line" | "bar" | "pie" | "doughnut", "title": "optional title", "data": { "labels": ["Label 1"], "datasets": [{ "label": "Series A", "data": [100], "backgroundColor": "#93c5fd" }] } } ```. The JSON must be valid and include labels and numeric data arrays. If no chart is required, skip the chart block.';
 
 const MAX_HISTORY = 10;
 
@@ -53,7 +57,7 @@ const Chat = () => {
   const buildMessagesToSend = (userContent: string) => {
     const recentMessages = messages.slice(-MAX_HISTORY);
     return [
-      { role: 'system' as const, content: 'You are a helpful AI assistant.' },
+      { role: 'system' as const, content: SYSTEM_PROMPT },
       ...recentMessages.map((m) => ({
         role: m.role as 'user' | 'assistant' | 'system',
         content: m.content,
@@ -107,7 +111,7 @@ const Chat = () => {
 
   return (
     <div className='flex h-[calc(100vh-4rem)] justify-center items-center p-4'>
-      <Card className='w-full max-w-2xl h-full flex flex-col'>
+      <Card className='w-full max-w-5xl h-full flex flex-col'>
         <CardHeader>
           <CardTitle className='text-xl font-semibold'>
             Chat with your AI Buddy!
@@ -129,9 +133,9 @@ const Chat = () => {
                   }`}
                 >
                   <div
-                    className={`group relative prose p-3 rounded-lg max-w-[80%] ${
+                    className={`group relative prose p-3 rounded-lg w-[90%] ${
                       msg.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
+                        ? 'bg-primary text-primary-foreground max-w-[80%]'
                         : 'bg-muted text-muted-foreground mb-6'
                     }`}
                   >
@@ -140,6 +144,7 @@ const Chat = () => {
                         {msg.content}
                       </ReactMarkdown>
                     </div>
+                    {msg.chart && <ChartBlock payload={msg.chart} />}
 
                     {/* AI bubble actions */}
                     {msg.role === 'assistant' && (
